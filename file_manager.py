@@ -25,6 +25,7 @@ class File_Manager(object):
             # Gets local_file URI
             local_file_uri = daemon.register(local_file)
             with Pyro4.locateNS() as naming_server:
+                # Register on naming server
                 naming_server.register(local_file.name, local_file_uri)            
             
         return local_file_uri
