@@ -1,6 +1,7 @@
 from __future__ import print_function
 import socket
 import time
+from threading import Thread
 
 import Pyro4
 import Pyro4.core
@@ -13,6 +14,26 @@ class File_Manager(object):
     def __init__(self):
         print("Bem vindo ao gerenciador de arquivos distribuidos")
 
+        # Local URI list and logical name dictionary.
+        # In case naming server fails (local backup)
+        self.uri_list = []
+        # Dictonary key = URI, value = logical_name
+        self.logical_names = {}
+        
+        # RMI Daemon
+        with Pyro4.Daemon() as daemon:
+            self.daemon = daemon
+
+        # Locating naming_server
+        self.naming_server = None
+        self.recover_naming_server()
+
+        # Pinging naming server to see if it's still up
+        thread_ping_ns = Thread(target = self.ping_naming_server, daemon=True)
+        thread_ping_ns.start()
+
+        
+
     def choose_file(self):
         """
         Chooses a file from your computer
@@ -21,20 +42,24 @@ class File_Manager(object):
 
         return local_file
 
-    def store_file(self, local_file):
+    def store_file(self, local_file, logic_name=local_file.name):
         """
         Register a file of your computer on the network, so that other computers can access it
         """
 
-        # Hash file to get logical name. Is it really necessary?
-
         # Give logical name to Pyro to register the object on the network
-        with Pyro4.Daemon() as daemon:
-            # Gets local_file URI
-            local_file_uri = daemon.register(local_file)
-            with Pyro4.locateNS() as naming_server:
-                # Register on naming server
-                naming_server.register(local_file.name, local_file_uri)            
+        # Gets local_file URI
+        local_file_uri = self.daemon.register(local_file)
+
+        # Adds uri and logical name to local list (in case of naming server failure)
+        self.uri_list.append(local_file_uri)
+        self.logical_names[local_file_uri] = logic_name
+
+        # Register on naming server
+        try:
+            self.naming_server.register(logic_name, local_file_uri)
+        except:
+            self.recover_naming_server()
             
         return local_file_uri
 
@@ -46,10 +71,13 @@ class File_Manager(object):
         
         files = []
 
-        with Pyro4.locateNS() as naming_server:
-            for file_name, file_uri in naming_server.list(prefix=logical_name).items():
+        try:
+            for file_name, file_uri in self.naming_server.list(prefix=logical_name).items():
                 print("Encontrado arquivo: " + file_name)
                 files.append(Pyro4.Proxy(file_uri))
+        except:
+            print("Naming server nao encontrado. Tente novamente")
+            self.recover_naming_server()
 
         # If no file was found
         if not files:
@@ -67,6 +95,38 @@ class File_Manager(object):
         uri = self.search_file(logical_name)
 
         # Remove URI from name server
+
+    def recover_naming_server(self):
+        """
+        If there isn't a naming server, creates one and send info.
+        If there is, connects to it and send all previous information.
+        """
+        # Tries to locate Naming Server
+        with Pyro4.locateNS() as ns
+            if (None == ns):
+                start_naming_server()
+                self.recover_naming_server()
+            else:
+                self.naming_server = ns
+                if self.uri_list:
+                    for uri in uri_list:
+                        # Register on new naming server
+                        ns.register(self.logic_names[uri], uri)
+
+        return 
+
+    def ping_naming_server(timer=30):
+        """
+        Check if naming server still on every such seconds (received in argument)
+        """
+        while (True):
+            time.sleep(timer)
+            try:
+                self.naming_server.ping()
+            except:
+                recover_naming_server()
+
+        
 
 def start_naming_server():
     Pyro4.config.SERVERTYPE = "multiplex"
@@ -127,5 +187,6 @@ def start_naming_server():
 #
 #if __name__=="__main__":
 #    main()
+
 
 start_naming_server()
