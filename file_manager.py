@@ -65,7 +65,8 @@ class File_Manager(object):
 
     def search_file(self, logical_name):
         """
-        Receives a logical_name of a file and return a list of possible URIs results
+        Receives a logical_name of a file and return a list of lists.
+        Lists contain [file_name, proxy_object] for possible results
         URI contains file location. User then proceeds to open files and check which he wants
         """
         
@@ -74,25 +75,30 @@ class File_Manager(object):
         try:
             for file_name, file_uri in self.naming_server.list(prefix=logical_name).items():
                 print("Encontrado arquivo: " + file_name)
-                files.append(Pyro4.Proxy(file_uri))
+                finding = [file_name, Pyro4.Proxy(file_uri)]
+                files.append(finding)
         except:
             print("Naming server nao encontrado. Tente novamente")
             self.recover_naming_server()
 
-        # If no file was found
-        if not files:
-            raise ValueError("Não foi encontrado arquivo com este nome!")
-
         return files
 
-    def pick_file(self, files):
+    def download_file(self, remote_file):
         """
-        Receive a list of possible files with that name
+        Receives a [file_name, proxy_object] object to be downloaded. Downloads
         """
+        # Define name of new file. MISSING FILE EXTENSION!
+        name = remote_file[0] + "_downloaded"
 
-    def remove_file_from_network(self, logical_name):
+        # Open new file to be downloaded
 
-        uri = self.search_file(logical_name)
+        with open()        
+
+
+    def remove_file_from_network(self, remote_file):
+        """
+        Receives a [file_name, proxy_object] object to be removed
+        """
 
         # Remove URI from name server
 
