@@ -91,8 +91,13 @@ class File_Manager(object):
         name = remote_file[0] + "_downloaded"
 
         # Open new file to be downloaded
-
-        with open()        
+        with open(name, 'wb') as local_file:
+            
+            # Reads whole file, 1024 bytes at a time.
+            while (True):
+                data = remote_file[1].read(1024)
+                if ('' == data): break
+                local_file.write(data)
 
 
     def remove_file_from_network(self, remote_file):
