@@ -139,7 +139,7 @@ class Manager_GUI:
             for result in results:
                 file_label = Label(results_window, text=result[0])
                 file_label.grid(row=file_row, column=0)
-                file_action = Button(results_window, text=function_name, command=partial(function, result[1]) )
+                file_action = Button(results_window, text=function_name, command=partial(function, result) )
                 file_action.grid(row=file_row, column=1)
         
         # If there's no results
