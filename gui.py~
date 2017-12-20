@@ -144,7 +144,7 @@ class Manager_GUI:
         
         # If there's no results
         else: 
-            no_results_label= Label(results_window, text="Nao foram encontrados resultados :( Verifique o nome e tente novamente")
+            no_results_label= Label(results_window, text="Nao foram encontrados resultados :(")
             no_results_label.grid(row=0, column=0)
 
     def invalid_input_msg(self):

@@ -104,15 +104,8 @@ class File_Manager(object):
         """
         Receives a [file_name, proxy_object] object to be removed
         """
-        
-        # Removes files from remote computer
-        os.remove(os.path.realpath(remote_file[1].name) )
 
-        # Remove name from naming server
-        self.naming_server.remove(remote_file[0])
-
-        # Remove URI from daemon
-        self.naming_server.remove(remote_file[1])
+        # Remove URI from name server
 
     def recover_naming_server(self):
         """
