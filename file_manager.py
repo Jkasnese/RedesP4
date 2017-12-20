@@ -32,20 +32,12 @@ class File_Manager(object):
         thread_ping_ns = Thread(target = self.ping_naming_server, daemon=True)
         thread_ping_ns.start()
 
-        
-
-    def choose_file(self):
-        """
-        Chooses a file from your computer
-        """
-        # Opens local directory
-
-        return local_file
-
-    def store_file(self, local_file, logic_name=local_file.name):
+    def store_file(self, local_file, logic_name=''):
         """
         Register a file of your computer on the network, so that other computers can access it
         """
+        if ('' == logic_name):
+            logic_name=local_file.name
 
         # Give logical name to Pyro to register the object on the network
         # Gets local_file URI
@@ -55,13 +47,21 @@ class File_Manager(object):
         self.uri_list.append(local_file_uri)
         self.logical_names[local_file_uri] = logic_name
 
-        # Register on naming server
-        try:
-            self.naming_server.register(logic_name, local_file_uri)
-        except:
-            self.recover_naming_server()
-            
-        return local_file_uri
+        # Try 3 times to register on naming server
+        attempts = 0
+        while (attempts < 3):
+            try:
+                self.naming_server.register(logic_name, local_file_uri)
+                print("Arquivo armazenado! " + logic_name )
+                break;
+            except:
+                self.recover_naming_server()
+                attempts += 1
+
+        if (3 == attempts):
+            print(":( Nao foi possivel registrar o arquivo. Tente novamente mais tarde.")
+ 
+        return 
 
     def search_file(self, logical_name):
         """
@@ -102,20 +102,23 @@ class File_Manager(object):
         If there is, connects to it and send all previous information.
         """
         # Tries to locate Naming Server
-        with Pyro4.locateNS() as ns
-            if (None == ns):
-                start_naming_server()
-                self.recover_naming_server()
-            else:
+        try:        
+            with Pyro4.locateNS() as ns:
                 self.naming_server = ns
                 if self.uri_list:
                     for uri in uri_list:
                         # Register on new naming server
                         ns.register(self.logic_names[uri], uri)
 
+        # If no naming server was found, create one
+        except:
+            thread_start_ns = Thread(target = start_naming_server, daemon=True)
+            thread_start_ns.start()
+            self.recover_naming_server()
+
         return 
 
-    def ping_naming_server(timer=30):
+    def ping_naming_server(self, timer=30):
         """
         Check if naming server still on every such seconds (received in argument)
         """
@@ -188,5 +191,3 @@ def start_naming_server():
 #if __name__=="__main__":
 #    main()
 
-
-start_naming_server()
