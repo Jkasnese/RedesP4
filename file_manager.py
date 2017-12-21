@@ -100,7 +100,7 @@ class File_Manager(object):
                 local_file.write(data)
 
 
-    def remove_file_from_network(self, remote_file):
+    def remove_file(self, remote_file):
         """
         Receives a [file_name, proxy_object] object to be removed
         """
@@ -189,7 +189,7 @@ def start_naming_server():
     pyrodaemon.combine(broadcastServer)
 
     def loopcondition():
-        print(time.asctime(), "Waiting for requests...")
+        #print(time.asctime(), "Waiting for requests...")
         return True
     pyrodaemon.requestLoop(loopcondition)
 
