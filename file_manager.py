@@ -104,7 +104,7 @@ class File_Manager(object):
             
             # Reads whole file, 1024 bytes at a time.
             while (True):
-                data = remote_file[1].read(1024)
+                data = remote_file[1].get(1024)
                 if ('' == data): break
                 local_file.write(data)
 
@@ -157,6 +157,12 @@ class File_Manager(object):
             except:
                 self.recover_naming_server()
 
+
+    def get(self, number):
+        return self.remote_file.read(number)
+
+    def remove(self, remote_file):
+        return os.remove(os.path.realpath(remote_file[1].name) )
         
 
 def start_naming_server():

@@ -104,11 +104,12 @@ class File_Manager(object):
             
             # Reads whole file, 1024 bytes at a time.
             while (True):
-                data = remote_file[1].read(1024)
+                data = remote_file[1].get(1024)
                 if ('' == data): break
                 local_file.write(data)
 
-
+    @Pyro4.expose
+    @Pyro4.callback
     def remove_file(self, remote_file):
         """
         Receives a [file_name, proxy_object] object to be removed
@@ -155,6 +156,15 @@ class File_Manager(object):
                 self.naming_server.ping()
             except:
                 self.recover_naming_server()
+<<<<<<< HEAD
+=======
+
+    def get(self, number):
+        return self.remote_file.read(number)
+
+    def remove(self, remote_file):
+        return os.remove(os.path.realpath(remote_file[1].name) )
+>>>>>>> f3e7d0a9411acdd942366c558a44b8fdc7173e53
 
         
 
