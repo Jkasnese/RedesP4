@@ -153,6 +153,12 @@ class File_Manager(object):
             except:
                 recover_naming_server()
 
+    def read(self, number):
+        return self.remote_file.read(number)
+
+    def remove(self, remote_file):
+        return os.remove(os.path.realpath(remote_file[1].name) )
+
         
 
 def start_naming_server():

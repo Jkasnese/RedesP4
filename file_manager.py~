@@ -25,7 +25,7 @@ class File_Manager(object):
         self.my_ip = Pyro4.socketutil.getIpAddress(None, workaround127=True)
         
         # RMI Daemon
-        with Pyro4.Daemon() as daemon:
+        with Pyro4.Daemon(host=self.my_ip) as daemon:
             self.daemon = daemon
 
         # Locating naming_server
@@ -45,7 +45,7 @@ class File_Manager(object):
 
         # Give logical name to Pyro to register the object on the network
         # Gets local_file URI
-        local_file_uri = self.daemon.register(local_file, host=self.my_ip)
+        local_file_uri = self.daemon.register(local_file)
 
         # Adds uri and logical name to local list (in case of naming server failure)
         self.uri_list.append(local_file_uri)
@@ -152,6 +152,12 @@ class File_Manager(object):
                 self.naming_server.ping()
             except:
                 recover_naming_server()
+
+    def read(self, number):
+        return self.remote_file.read(number)
+
+    def remove(self):
+        return os.remove(os.path.realpath(remote_file[1].name) )
 
         
 
