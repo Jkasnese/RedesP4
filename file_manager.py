@@ -11,6 +11,7 @@ import Pyro4.socketutil
 
 
 @Pyro4.expose
+@Pyro4.callback
 class File_Manager(object):
     def __init__(self):
         print("Bem vindo ao gerenciador de arquivos distribuidos")
@@ -89,6 +90,8 @@ class File_Manager(object):
         print("Returning: " + str(files))
         return files
 
+    @Pyro4.expose
+    @Pyro4.callback
     def download_file(self, remote_file):
         """
         Receives a [file_name, proxy_object] object to be downloaded. Downloads
@@ -105,7 +108,8 @@ class File_Manager(object):
                 if ('' == data): break
                 local_file.write(data)
 
-
+    @Pyro4.expose
+    @Pyro4.callback
     def remove_file(self, remote_file):
         """
         Receives a [file_name, proxy_object] object to be removed
@@ -151,7 +155,7 @@ class File_Manager(object):
             try:
                 self.naming_server.ping()
             except:
-                recover_naming_server()
+                self.recover_naming_server()
 
         
 

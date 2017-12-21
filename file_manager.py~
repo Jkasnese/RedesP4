@@ -11,6 +11,7 @@ import Pyro4.socketutil
 
 
 @Pyro4.expose
+@Pyro4.callback
 class File_Manager(object):
     def __init__(self):
         print("Bem vindo ao gerenciador de arquivos distribuidos")
@@ -25,7 +26,7 @@ class File_Manager(object):
         self.my_ip = Pyro4.socketutil.getIpAddress(None, workaround127=True)
         
         # RMI Daemon
-        with Pyro4.Daemon() as daemon:
+        with Pyro4.Daemon(host=self.my_ip) as daemon:
             self.daemon = daemon
 
         # Locating naming_server
@@ -45,7 +46,7 @@ class File_Manager(object):
 
         # Give logical name to Pyro to register the object on the network
         # Gets local_file URI
-        local_file_uri = self.daemon.register(local_file, host=self.my_ip)
+        local_file_uri = self.daemon.register(local_file)
 
         # Adds uri and logical name to local list (in case of naming server failure)
         self.uri_list.append(local_file_uri)
@@ -89,6 +90,8 @@ class File_Manager(object):
         print("Returning: " + str(files))
         return files
 
+    @Pyro4.expose
+    @Pyro4.callback
     def download_file(self, remote_file):
         """
         Receives a [file_name, proxy_object] object to be downloaded. Downloads
@@ -151,7 +154,7 @@ class File_Manager(object):
             try:
                 self.naming_server.ping()
             except:
-                recover_naming_server()
+                self.recover_naming_server()
 
         
 
