@@ -2,6 +2,7 @@ from __future__ import print_function
 import socket
 import time
 from threading import Thread
+import os
 
 import Pyro4
 import Pyro4.core
@@ -19,6 +20,9 @@ class File_Manager(object):
         self.uri_list = []
         # Dictonary key = URI, value = logical_name
         self.logical_names = {}
+
+        # Gets own IP address
+        self.my_ip = Pyro4.socketutil.getIpAddress(None, workaround127=True)
         
         # RMI Daemon
         with Pyro4.Daemon() as daemon:
@@ -37,11 +41,11 @@ class File_Manager(object):
         Register a file of your computer on the network, so that other computers can access it
         """
         if ('' == logic_name):
-            logic_name=local_file.name
+            logic_name = str(os.path.basename(local_file.name))
 
         # Give logical name to Pyro to register the object on the network
         # Gets local_file URI
-        local_file_uri = self.daemon.register(local_file)
+        local_file_uri = self.daemon.register(local_file, host=self.my_ip)
 
         # Adds uri and logical name to local list (in case of naming server failure)
         self.uri_list.append(local_file_uri)
@@ -73,6 +77,7 @@ class File_Manager(object):
         files = []
 
         try:
+            print(self.naming_server)
             for file_name, file_uri in self.naming_server.list(prefix=logical_name).items():
                 print("Encontrado arquivo: " + file_name)
                 finding = [file_name, Pyro4.Proxy(file_uri)]
@@ -81,6 +86,7 @@ class File_Manager(object):
             print("Naming server nao encontrado. Tente novamente")
             self.recover_naming_server()
 
+        print("Returning: " + str(files))
         return files
 
     def download_file(self, remote_file):
@@ -100,7 +106,7 @@ class File_Manager(object):
                 local_file.write(data)
 
 
-    def remove_file_from_network(self, remote_file):
+    def remove_file(self, remote_file):
         """
         Receives a [file_name, proxy_object] object to be removed
         """

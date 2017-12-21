@@ -94,6 +94,7 @@ class Manager_GUI:
 
     def search(self):
         user_input = self.search_input.get()
+        print("Buscando por: " + user_input)
         if (self.check_valid_input(user_input)):
             self.search_results_window(self.file_manager.search_file(user_input), self.file_manager.download_file, "baixar")
         else:
